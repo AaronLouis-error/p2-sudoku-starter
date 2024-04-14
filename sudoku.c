@@ -6,6 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void* row(int psize, int rowNum, int tid){
+  printf("thread: %d\n", tid);
+  sleep(2);
+  return NULL;
+}
+
 // takes puzzle size and grid[][] representing sudoku puzzle
 // and tow booleans to be assigned: complete and valid.
 // row-0 and column-0 is ignored for convenience, so a 9x9 puzzle
@@ -15,8 +21,17 @@
 // to psize For incomplete puzzles, we cannot say anything about validity
 void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
   // YOUR CODE GOES HERE and in HELPER FUNCTIONS
-  *valid = true;
-  *complete = true;
+  //*valid = true;
+  //*complete = true;
+  pthread_t t1, t2, t3; 
+  pthread_create(&t1, NULL, row, NULL);
+  pthread_create(&t2, NULL, row, NULL);
+  pthread_create(&t3, NULL, row, NULL);
+
+  pthread_join(t1, NULL);
+  pthread_join(t2, NULL);
+  pthread_join(t3, NULL);
+
 }
 
 // takes filename and pointer to grid[][]
