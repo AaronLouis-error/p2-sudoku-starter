@@ -63,20 +63,43 @@ void deleteSudokuPuzzle(int psize, int **grid) {
   free(grid);
 }
 
-void runTests(){
-  return void;
+int runTests(){
+  int **grid = NULL;
+  // find grid size and fill grid
+  
+  char* puzzleNames[] = {"puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
+                        "puzzle2-valid.txt", "puzzle9-valid.txt"};
+  int numOfPuzzles = sizeof(puzzleNames) / sizeof(puzzleNames[0]);
+  for (int i = 0; i < numOfPuzzles; i++){
+    //printf("size: %d\n", numOfPuzzles);
+    //printf("i: %d\n", i);
+    int sudokuSize = readSudokuPuzzle(puzzleNames[i], &grid);
+    bool valid = false;
+    bool complete = false;
+    checkPuzzle(sudokuSize, grid, &complete, &valid);
+    printf("Complete puzzle? ");
+    printf(complete ? "true\n" : "false\n");
+    if (complete) {
+      printf("Valid puzzle? ");
+      printf(valid ? "true\n" : "false\n");
+    }
+    printSudokuPuzzle(sudokuSize, grid);
+    deleteSudokuPuzzle(sudokuSize, grid);
+  }
+  return EXIT_SUCCESS;
 }
 
 // expects file name of the puzzle as argument in command line
-int main() {
-  bool runTestbool = true;
-  if (runTestbool){
-    runTests();
-  } else {
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    //printf("usage: ./sudoku puzzle.txt\n");
+    printf("Running Tests\n");
+    return runTests();
+  }
+  
   // grid is a 2D array
   int **grid = NULL;
   // find grid size and fill grid
-  //todo: collect input from terminal
   int sudokuSize = readSudokuPuzzle(argv[1], &grid);
   bool valid = false;
   bool complete = false;
@@ -90,6 +113,4 @@ int main() {
   printSudokuPuzzle(sudokuSize, grid);
   deleteSudokuPuzzle(sudokuSize, grid);
   return EXIT_SUCCESS;
-  }
-  return 0;
 }
