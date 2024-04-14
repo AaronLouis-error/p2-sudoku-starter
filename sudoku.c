@@ -63,15 +63,20 @@ void deleteSudokuPuzzle(int psize, int **grid) {
   free(grid);
 }
 
+void runTests(){
+  return void;
+}
+
 // expects file name of the puzzle as argument in command line
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    printf("usage: ./sudoku puzzle.txt\n");
-    return EXIT_FAILURE;
-  }
+int main() {
+  bool runTestbool = true;
+  if (runTestbool){
+    runTests();
+  } else {
   // grid is a 2D array
   int **grid = NULL;
   // find grid size and fill grid
+  //todo: collect input from terminal
   int sudokuSize = readSudokuPuzzle(argv[1], &grid);
   bool valid = false;
   bool complete = false;
@@ -85,4 +90,6 @@ int main(int argc, char **argv) {
   printSudokuPuzzle(sudokuSize, grid);
   deleteSudokuPuzzle(sudokuSize, grid);
   return EXIT_SUCCESS;
+  }
+  return 0;
 }
