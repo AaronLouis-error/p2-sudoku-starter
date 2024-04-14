@@ -14,25 +14,20 @@ void* row(bool *isValidParam){
   // if there is a reapeat value or a zero the row is incomplete. 
   bool isValid = true;
   int current;
-  for (int j = 1; j <= globalPsize; j++){
+  for (int j = 1; j <= globalPsize && isValid; j++){
     int last = -1;
-    for (int i = 1; i <= globalPsize; i++){
+    for (int i = 1; i <= globalPsize && isValid; i++){
       current = globalGrid[j][i];
       if (current == 0 || current == last){
       printf("fail\n");
       isValid = false;
-      
       //todo exit here to save time
       }
       last = current;
     }
   }
-  //bool* boolPtr = &isValid;
-  //*isValidParam = isValid;
-  printf("before return: %d\n", isValid);
   bool* boolPtr = malloc(isValid);
   *boolPtr = (isValid) ? true : false;
-  //boolPtr = ()
   return boolPtr;
 }
 
