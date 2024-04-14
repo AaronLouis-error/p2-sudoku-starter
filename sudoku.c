@@ -6,10 +6,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void* row(int psize, int rowNum, int tid){
-  printf("thread: %d\n", tid);
-  sleep(2);
-  return NULL;
+int **globalGrid; 
+int globalPsize;
+
+
+void* row(bool *isValidParam){
+  // if there is a reapeat value or a zero the row is incomplete. 
+  bool isValid = true;
+  int current;
+  for (int j = 1; j <= globalPsize; j++){
+    int last = -1;
+    for (int i = 1; i <= globalPsize; i++){
+      current = globalGrid[j][i];
+      if (current == 0 || current == last){
+      printf("fail\n");
+      isValid = false;
+      
+      //todo exit here to save time
+      }
+      last = current;
+    }
+  }
+  //bool* boolPtr = &isValid;
+  //*isValidParam = isValid;
+  printf("before return: %d\n", isValid);
+  bool* boolPtr = malloc(isValid);
+  *boolPtr = (isValid) ? true : false;
+  //boolPtr = ()
+  return boolPtr;
 }
 
 // takes puzzle size and grid[][] representing sudoku puzzle
@@ -25,13 +49,18 @@ void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
   //*complete = true;
   pthread_t t1, t2, t3; 
   pthread_create(&t1, NULL, row, NULL);
-  pthread_create(&t2, NULL, row, NULL);
-  pthread_create(&t3, NULL, row, NULL);
+  //pthread_create(&t2, NULL, row, NULL);
+  //pthread_create(&t3, NULL, row, NULL);
 
-  pthread_join(t1, NULL);
-  pthread_join(t2, NULL);
-  pthread_join(t3, NULL);
+  bool* validRows;
 
+  pthread_join(t1, (void **) &validRows);
+  printf("valid Rows? %d\n", *validRows);
+  //pthread_join(t2, NULL);
+  //pthread_join(t3, NULL);
+  //todo: need to wait till threads are executed before leaving function
+
+  //pthread_exit(NULL);
 }
 
 // takes filename and pointer to grid[][]
@@ -44,6 +73,8 @@ int readSudokuPuzzle(char *filename, int ***grid) {
   }
   int psize;
   fscanf(fp, "%d", &psize);
+  printf("psize: %d\n", psize);
+  globalPsize = psize;
   int **agrid = (int **)malloc((psize + 1) * sizeof(int *));
   for (int row = 1; row <= psize; row++) {
     agrid[row] = (int *)malloc((psize + 1) * sizeof(int));
@@ -53,6 +84,7 @@ int readSudokuPuzzle(char *filename, int ***grid) {
   }
   fclose(fp);
   *grid = agrid;
+  globalGrid = *grid;
   return psize;
 }
 
@@ -82,8 +114,8 @@ int runTests(){
   int **grid = NULL;
   // find grid size and fill grid
   
-  char* puzzleNames[] = {"puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
-                        "puzzle2-valid.txt", "puzzle9-valid.txt"};
+  char* puzzleNames[] = {"puzzle2-valid.txt", "puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
+                        "puzzle9-valid.txt"};
   int numOfPuzzles = sizeof(puzzleNames) / sizeof(puzzleNames[0]);
   for (int i = 0; i < numOfPuzzles; i++){
     //printf("size: %d\n", numOfPuzzles);
