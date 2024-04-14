@@ -10,24 +10,26 @@ int **globalGrid;
 int globalPsize;
 
 
-void* row(bool *isValidParam){
+void* row(int param){
   // if there is a reapeat value or a zero the row is incomplete. 
   bool isValid = true;
   int current;
   for (int j = 1; j <= globalPsize && isValid; j++){
-    int last = -1;
+    int last = -1; // initialize with a value you won't find in sudoku
     for (int i = 1; i <= globalPsize && isValid; i++){
       current = globalGrid[j][i];
-      if (current == 0 || current == last){
-      printf("fail\n");
-      isValid = false;
-      //todo exit here to save time
+      if (current == 0){
+        isValid = false; //technically is incomplete
+        //todo: complete row
+      }
+      if (current == last){
+        isValid = false;
       }
       last = current;
     }
   }
-  bool* boolPtr = malloc(isValid);
-  *boolPtr = (isValid) ? true : false;
+  bool* boolPtr = malloc(isValid); //initialize pointer
+  *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
 }
 
@@ -53,9 +55,6 @@ void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
   printf("valid Rows? %d\n", *validRows);
   //pthread_join(t2, NULL);
   //pthread_join(t3, NULL);
-  //todo: need to wait till threads are executed before leaving function
-
-  //pthread_exit(NULL);
 }
 
 // takes filename and pointer to grid[][]
