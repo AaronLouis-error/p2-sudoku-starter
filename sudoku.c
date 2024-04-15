@@ -10,7 +10,7 @@ int **globalGrid;
 int globalPsize;
 
 
-void* row(int param){
+void* row(int rowNum){
   // if there is a reapeat value or a zero the row is incomplete. 
   bool isValid = true;
   int current;
@@ -31,6 +31,12 @@ void* row(int param){
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
+}
+
+//todo: create threads based on psize
+void spawnRowThread(){
+  pthread_t row[globalPsize];
+
 }
 
 // takes puzzle size and grid[][] representing sudoku puzzle
