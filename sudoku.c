@@ -49,7 +49,8 @@ void spawnRowThreads(){
   
   //do this create->join prevent parallel threads?
   for(int i = 0; i < globalPsize; i++){
-    pthread_create(&rowNum[i], NULL, row, (void*)i);
+    pthread_create(&rowNum[i], NULL, row, (void*)i); //need two for loops, this 
+    //causes them to run serial 
     pthread_join(rowNum[i], (void **)&rowIsValid);
     if (!*rowIsValid) { gridIsValid = false; }
   }
