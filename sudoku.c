@@ -10,18 +10,18 @@ int **globalGrid;
 int globalPsize;
 
 
-//todo: use a struct
-
+//todo: create a struct that can store the &grid, bool isComplete, bool isVaild, row num
+// & pass that as a parameter in here.
 void* row(int rowNum){
-  // if there is a reapeat value or a zero the row is incomplete. 
-  //todo: this logic doesn't work, maybe I should use an array,
-  // and array of -1's, if it's other than -1 before instertion, its a repeat
-  // just because last matches current doesn't check for non-adjacent doubles. 
+
+  int array[globalPsize]; 
+  for (int i = 0; i < globalPsize; i++){
+    array[i] = -1;
+  }
+
   bool isValid = true;
   int current;
   printf("thread: %d\n", rowNum);
-  //for (int j = 1; j <= globalPsize && isValid; j++){
-    int last = -1; // initialize with a value you won't find in sudoku
     for (int i = 1; i <= globalPsize && isValid; i++){
       current = globalGrid[rowNum + 1][i];
       if (current == 0){
@@ -30,35 +30,43 @@ void* row(int rowNum){
         // only if I can't complete the row will I return false
         isValid = false; //technically is incomplete
       }
-      if (current == last){
+      if (array[current - 1]  != -1 && current != 0){
+        // the value corresponding to current has already been set meaning 
+        // this is a repeat
+        printf("repeat: %d\n", current);
         isValid = false;
       }
-      last = current;
+      array[current - 1] = current;
     }
-  //}
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
 }
 
-//todo: create threads based on psize
-void spawnRowThreads(){
+// This method creates number of threads equivilent to number of rows.
+// The logic for testing the validity of a row is in row() which this method 
+// calls. 
+bool spawnRowThreads(bool *complete, bool *valid, int **grid){
   bool gridIsValid = true;
   bool* rowIsValid;
   pthread_t rowNum[globalPsize];
   
-  //do this create->join prevent parallel threads?
+  //need two for loops to run threads simultainiously 
   for(int i = 0; i < globalPsize; i++){
-    pthread_create(&rowNum[i], NULL, row, (void*)i); //need two for loops, this 
-    //causes them to run serial 
+    pthread_create(&rowNum[i], NULL, row, (void*)i);
+  }
+
+  for(int i = 0; i < globalPsize; i++){
     pthread_join(rowNum[i], (void **)&rowIsValid);
     if (!*rowIsValid) { gridIsValid = false; }
   }
 
   if (gridIsValid){
     printf("valid grid\n");
+    return true;
   }else{
     printf("not valid grid\n");
+    return false; 
   }
 }
 
@@ -71,20 +79,9 @@ void spawnRowThreads(){
 // to psize For incomplete puzzles, we cannot say anything about validity
 void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
   // YOUR CODE GOES HERE and in HELPER FUNCTIONS
-  //*valid = true;
-  //*complete = true;
-  //pthread_t t1, t2, t3; 
-  //pthread_create(&t1, NULL, row, NULL);
-  //pthread_create(&t2, NULL, row, NULL);
-  //pthread_create(&t3, NULL, row, NULL);
-
-  //bool* validRows;
-
-  //pthread_join(t1, (void **) &validRows);
-  //printf("valid Rows? %d\n", *validRows);
-  spawnRowThreads();
-  //pthread_join(t2, NULL);
-  //pthread_join(t3, NULL);
+  
+  *valid = (spawnRowThreads(&complete, &valid, &grid)) ? true : false ;
+  
 }
 
 // takes filename and pointer to grid[][]
