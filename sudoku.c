@@ -14,29 +14,46 @@ void* row(int rowNum){
   // if there is a reapeat value or a zero the row is incomplete. 
   bool isValid = true;
   int current;
-  for (int j = 1; j <= globalPsize && isValid; j++){
+  printf("thread: %d\n", rowNum);
+  //for (int j = 1; j <= globalPsize && isValid; j++){
     int last = -1; // initialize with a value you won't find in sudoku
     for (int i = 1; i <= globalPsize && isValid; i++){
-      current = globalGrid[j][i];
+      current = globalGrid[rowNum + 1][i];
       if (current == 0){
-        isValid = false; //technically is incomplete
+        //todo: method to complete row
         //todo: complete row
+        // only if I can't complete the row will I return false
+        isValid = false; //technically is incomplete
       }
       if (current == last){
         isValid = false;
       }
       last = current;
     }
-  }
+  //}
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
 }
 
 //todo: create threads based on psize
-void spawnRowThread(){
-  pthread_t row[globalPsize];
+void spawnRowThreads(){
+  bool gridIsValid = true;
+  bool* rowIsValid;
+  pthread_t rowNum[globalPsize];
+  
+  //do this create->join prevent parallel threads?
+  for(int i = 0; i < globalPsize; i++){
+    pthread_create(&rowNum[i], NULL, row, (void*)i);
+    pthread_join(rowNum[i], (void **)&rowIsValid);
+    if (!*rowIsValid) { gridIsValid = false; }
+  }
 
+  if (gridIsValid){
+    printf("valid grid\n");
+  }else{
+    printf("not valid grid\n");
+  }
 }
 
 // takes puzzle size and grid[][] representing sudoku puzzle
@@ -50,15 +67,16 @@ void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
   // YOUR CODE GOES HERE and in HELPER FUNCTIONS
   //*valid = true;
   //*complete = true;
-  pthread_t t1, t2, t3; 
-  pthread_create(&t1, NULL, row, NULL);
+  //pthread_t t1, t2, t3; 
+  //pthread_create(&t1, NULL, row, NULL);
   //pthread_create(&t2, NULL, row, NULL);
   //pthread_create(&t3, NULL, row, NULL);
 
-  bool* validRows;
+  //bool* validRows;
 
-  pthread_join(t1, (void **) &validRows);
-  printf("valid Rows? %d\n", *validRows);
+  //pthread_join(t1, (void **) &validRows);
+  //printf("valid Rows? %d\n", *validRows);
+  spawnRowThreads();
   //pthread_join(t2, NULL);
   //pthread_join(t3, NULL);
 }
