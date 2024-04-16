@@ -10,8 +10,13 @@ int **globalGrid;
 int globalPsize;
 
 
+//todo: use a struct
+
 void* row(int rowNum){
   // if there is a reapeat value or a zero the row is incomplete. 
+  //todo: this logic doesn't work, maybe I should use an array,
+  // and array of -1's, if it's other than -1 before instertion, its a repeat
+  // just because last matches current doesn't check for non-adjacent doubles. 
   bool isValid = true;
   int current;
   printf("thread: %d\n", rowNum);
