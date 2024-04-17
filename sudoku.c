@@ -12,10 +12,10 @@ int globalPsize;
 
 
 struct gridInfo {
-    int** grid;  
+    int** grid;
     int psize;
-    bool isComplete; // Pointer to a boolean indicating completeness
-    bool isValid;    // Pointer to a boolean indicating validity     // Row number
+    bool isComplete; 
+    bool isValid;    
 };
 
 //todo: create a struct that can store the &grid, bool isComplete, bool isVaild, row num
@@ -91,12 +91,12 @@ void checkPuzzle(struct gridInfo* currentGrid) {
   // YOUR CODE GOES HERE and in HELPER FUNCTIONS
   
   //*valid = (spawnRowThreads(&complete, &valid, &grid)) ? true : false ;
-  spawnRowThreads(&currentGrid);
+  spawnRowThreads(currentGrid);
 }
 
 // takes filename and pointer to grid[][]
 // returns size of Sudoku puzzle and fills grid
-struct gridInfo* readSudokuPuzzle(char *filename, int ***grid) {
+void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
     printf("Could not open file %s\n", filename);
@@ -107,6 +107,7 @@ struct gridInfo* readSudokuPuzzle(char *filename, int ***grid) {
   int psize;
   fscanf(fp, "%d", &psize);
   printf("psize: %d\n", psize);
+  myGrid->psize = psize;
   globalPsize = psize;
   int **agrid = (int **)malloc((psize + 1) * sizeof(int *));
   for (int row = 1; row <= psize; row++) {
@@ -116,15 +117,19 @@ struct gridInfo* readSudokuPuzzle(char *filename, int ***grid) {
     }
   }
   fclose(fp);
-  *grid = agrid;
-  globalGrid = *grid;
+  //*grid = agrid;
+  myGrid->grid = agrid;
+  //globalGrid = *grid;
+  globalGrid = myGrid->grid;
+  myGrid->isComplete = true;
+  myGrid->isValid = true;
 
   //struct gridInfo currentGrid = malloc(gridInfo);
-  struct gridInfo currentGrid = {agrid, psize, true, true};
+  //struct gridInfo currentGrid = {agrid, psize, true, true};
   // todo: properly initialized by not going to next function with same info
   //maybe the problem is a pointer to a local variable
   //return psize;
-  return &currentGrid;
+  //return &currentGrid;
 }
 
 // takes puzzle size and grid[][]
@@ -147,10 +152,13 @@ void deleteSudokuPuzzle(int psize, int **grid) {
     free(grid[row]);
   }
   free(grid);
+  //todo: free the struct
 }
 
 int runTests(){
   int **grid = NULL;
+  struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
+  myGrid->psize = malloc(sizeof(int));
   // find grid size and fill grid
   
   char* puzzleNames[] = {"puzzle2-valid.txt", "puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
@@ -159,8 +167,8 @@ int runTests(){
   for (int i = 0; i < numOfPuzzles; i++){
     //printf("size: %d\n", numOfPuzzles);
     //printf("i: %d\n", i);
-    struct gridInfo* myGrid;
-    myGrid = readSudokuPuzzle(puzzleNames[i], &grid);
+    //struct gridInfo* myGrid;
+    readSudokuPuzzle(puzzleNames[i], myGrid);
     bool valid = false;
     bool complete = false;
     checkPuzzle(myGrid);
@@ -186,8 +194,9 @@ int main(int argc, char **argv) {
   
   // grid is a 2D array
   int **grid = NULL;
-  struct gridInfo* myGrid;
-  myGrid = readSudokuPuzzle(argv[1], &grid);
+  //struct gridInfo* myGrid;
+  struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
+  readSudokuPuzzle(argv[1], &myGrid);
   bool valid = false;
   bool complete = false;
   checkPuzzle(&myGrid);
