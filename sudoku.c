@@ -22,7 +22,7 @@ struct gridInfo {
 
 void* row(struct gridInfo* myGrid){
 
-  int array[myGrid->psize]; //todo: no more global Psize
+  int array[myGrid->psize]; 
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
@@ -36,14 +36,14 @@ void* row(struct gridInfo* myGrid){
         //todo: method to complete row
         //todo: complete row
         // only if I can't complete the row will I return false
-        printf("zero detected\n");
+        //printf("zero detected\n");
         myGrid->isComplete = false;
         isValid = false; //technically is incomplete
       }
       if (array[current - 1]  != -1 && current != 0){
         // the value corresponding to current has already been set meaning 
         // this is a repeat
-        printf("repeat: %d\n", current);
+        //printf("repeat: %d\n", current);
         myGrid->isValid = false;
         isValid = false;
       }
@@ -72,16 +72,9 @@ void spawnRowThreads(struct gridInfo* currentGrid){
 
   for(int i = 0; i < currentGrid->psize; i++){
     pthread_join(rowNum[i], (void **)&rowIsValid);
-    if (!*rowIsValid) { gridIsValid = false; }
+    if (!*rowIsValid) { currentGrid->isValid = false; }
   }
 
-  if (gridIsValid){
-    printf("valid grid\n");
-    currentGrid->isValid = true;
-  }else{
-    printf("not valid grid\n");
-    currentGrid->isValid = false;
-  }
 }
 
 // takes puzzle size and grid[][] representing sudoku puzzle
@@ -104,7 +97,6 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
     exit(EXIT_FAILURE);
   }
 
-  
   fscanf(fp, "%d", &myGrid->psize);
   int **agrid = (int **)malloc((myGrid->psize + 1) * sizeof(int *));
   for (int row = 1; row <= myGrid->psize; row++) {
@@ -116,7 +108,6 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
 
   fclose(fp);
   myGrid->grid = agrid;
-  //globalGrid = myGrid->grid;
   myGrid->isComplete = true;
   myGrid->isValid = true;
 }
