@@ -22,7 +22,7 @@ struct gridInfo {
 // & pass that as a parameter in here.
 void* row(int rowNum){
 
-  int array[globalPsize]; 
+  int array[globalPsize]; //todo: no more global Psize
   for (int i = 0; i < globalPsize; i++){
     array[i] = -1;
   }
@@ -55,6 +55,8 @@ void* row(int rowNum){
 // The logic for testing the validity of a row is in row() which this method 
 // calls. 
 void spawnRowThreads(struct gridInfo* currentGrid){
+  globalPsize = currentGrid->psize;
+  //todo: learn to pass an int and a struct to row() & delete global variables
   bool gridIsValid = true;
   bool* rowIsValid;
   pthread_t rowNum[currentGrid->psize];
@@ -98,12 +100,8 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
     exit(EXIT_FAILURE);
   }
 
-  //int psize;
-  //fscanf(fp, "%d", &psize);
-  //printf("psize: %d\n", psize);
-  //myGrid->psize = psize;
+  
   fscanf(fp, "%d", &myGrid->psize);
-  //globalPsize = psize;
   int **agrid = (int **)malloc((myGrid->psize + 1) * sizeof(int *));
   for (int row = 1; row <= myGrid->psize; row++) {
     agrid[row] = (int *)malloc((myGrid->psize + 1) * sizeof(int));
@@ -111,20 +109,12 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
       fscanf(fp, "%d", &agrid[row][col]);
     }
   }
+
   fclose(fp);
-  //*grid = agrid;
   myGrid->grid = agrid;
-  //globalGrid = *grid;
   globalGrid = myGrid->grid;
   myGrid->isComplete = true;
   myGrid->isValid = true;
-
-  //struct gridInfo currentGrid = malloc(gridInfo);
-  //struct gridInfo currentGrid = {agrid, psize, true, true};
-  // todo: properly initialized by not going to next function with same info
-  //maybe the problem is a pointer to a local variable
-  //return psize;
-  //return &currentGrid;
 }
 
 // takes puzzle size and grid[][]
