@@ -72,11 +72,9 @@ void spawnRowThreads(struct gridInfo* currentGrid){
   if (gridIsValid){
     printf("valid grid\n");
     currentGrid->isValid = true;
-    //return true;
   }else{
     printf("not valid grid\n");
     currentGrid->isValid = false;
-    //return false; 
   }
 }
 
@@ -88,9 +86,6 @@ void spawnRowThreads(struct gridInfo* currentGrid){
 // If complete, a puzzle is valid if all rows/columns/boxes have numbers from 1
 // to psize For incomplete puzzles, we cannot say anything about validity
 void checkPuzzle(struct gridInfo* currentGrid) {
-  // YOUR CODE GOES HERE and in HELPER FUNCTIONS
-  
-  //*valid = (spawnRowThreads(&complete, &valid, &grid)) ? true : false ;
   spawnRowThreads(currentGrid);
 }
 
@@ -103,16 +98,16 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
     exit(EXIT_FAILURE);
   }
 
-  //struct gridInfo currentGrid
-  int psize;
-  fscanf(fp, "%d", &psize);
-  printf("psize: %d\n", psize);
-  myGrid->psize = psize;
-  globalPsize = psize;
-  int **agrid = (int **)malloc((psize + 1) * sizeof(int *));
-  for (int row = 1; row <= psize; row++) {
-    agrid[row] = (int *)malloc((psize + 1) * sizeof(int));
-    for (int col = 1; col <= psize; col++) {
+  //int psize;
+  //fscanf(fp, "%d", &psize);
+  //printf("psize: %d\n", psize);
+  //myGrid->psize = psize;
+  fscanf(fp, "%d", &myGrid->psize);
+  //globalPsize = psize;
+  int **agrid = (int **)malloc((myGrid->psize + 1) * sizeof(int *));
+  for (int row = 1; row <= myGrid->psize; row++) {
+    agrid[row] = (int *)malloc((myGrid->psize + 1) * sizeof(int));
+    for (int col = 1; col <= myGrid->psize; col++) {
       fscanf(fp, "%d", &agrid[row][col]);
     }
   }
