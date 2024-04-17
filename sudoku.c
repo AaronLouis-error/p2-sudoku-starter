@@ -6,8 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int **globalGrid; 
-int globalPsize;
+
 
 
 
@@ -16,32 +15,36 @@ struct gridInfo {
     int psize;
     bool isComplete; 
     bool isValid;    
+    int rowNum;
 };
 
-//todo: create a struct that can store the &grid, bool isComplete, bool isVaild, row num
-// & pass that as a parameter in here.
-void* row(int rowNum){
 
-  int array[globalPsize]; //todo: no more global Psize
-  for (int i = 0; i < globalPsize; i++){
+
+void* row(struct gridInfo* myGrid){
+
+  int array[myGrid->psize]; //todo: no more global Psize
+  for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
 
   bool isValid = true;
   int current;
   //printf("thread: %d\n", rowNum);
-    for (int i = 1; i <= globalPsize && isValid; i++){
-      current = globalGrid[rowNum + 1][i];
+    for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
+      current = myGrid->grid[myGrid->rowNum][i];
       if (current == 0){
         //todo: method to complete row
         //todo: complete row
         // only if I can't complete the row will I return false
+        printf("zero detected\n");
+        myGrid->isComplete = false;
         isValid = false; //technically is incomplete
       }
       if (array[current - 1]  != -1 && current != 0){
         // the value corresponding to current has already been set meaning 
         // this is a repeat
         printf("repeat: %d\n", current);
+        myGrid->isValid = false;
         isValid = false;
       }
       array[current - 1] = current;
@@ -55,7 +58,7 @@ void* row(int rowNum){
 // The logic for testing the validity of a row is in row() which this method 
 // calls. 
 void spawnRowThreads(struct gridInfo* currentGrid){
-  globalPsize = currentGrid->psize;
+  //globalPsize = currentGrid->psize;
   //todo: learn to pass an int and a struct to row() & delete global variables
   bool gridIsValid = true;
   bool* rowIsValid;
@@ -63,7 +66,8 @@ void spawnRowThreads(struct gridInfo* currentGrid){
   
   //need two for loops to run threads simultainiously 
   for(int i = 0; i < currentGrid->psize; i++){
-    pthread_create(&rowNum[i], NULL, row, (void*)i);
+    currentGrid->rowNum = i;
+    pthread_create(&rowNum[i], NULL, row, (void*)currentGrid);
   }
 
   for(int i = 0; i < currentGrid->psize; i++){
@@ -112,7 +116,7 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
 
   fclose(fp);
   myGrid->grid = agrid;
-  globalGrid = myGrid->grid;
+  //globalGrid = myGrid->grid;
   myGrid->isComplete = true;
   myGrid->isValid = true;
 }
@@ -143,25 +147,20 @@ void deleteSudokuPuzzle(int psize, int **grid) {
 int runTests(){
   int **grid = NULL;
   struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
-  myGrid->psize = malloc(sizeof(int));
+  //myGrid->psize = malloc(sizeof(int));
   // find grid size and fill grid
   
   char* puzzleNames[] = {"puzzle2-valid.txt", "puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
                         "puzzle9-valid.txt"};
   int numOfPuzzles = sizeof(puzzleNames) / sizeof(puzzleNames[0]);
   for (int i = 0; i < numOfPuzzles; i++){
-    //printf("size: %d\n", numOfPuzzles);
-    //printf("i: %d\n", i);
-    //struct gridInfo* myGrid;
     readSudokuPuzzle(puzzleNames[i], myGrid);
-    bool valid = false;
-    bool complete = false;
     checkPuzzle(myGrid);
     printf("Complete puzzle? ");
-    printf(complete ? "true\n" : "false\n");
-    if (complete) {
+    printf(myGrid->isComplete ? "true\n" : "false\n");
+    if (myGrid->isComplete) {
       printf("Valid puzzle? ");
-      printf(valid ? "true\n" : "false\n");
+      printf(myGrid->isValid ? "true\n" : "false\n");
     }
     printSudokuPuzzle(myGrid->psize, myGrid->grid);
     deleteSudokuPuzzle(myGrid->psize, myGrid->grid);
@@ -177,6 +176,7 @@ int main(int argc, char **argv) {
     return runTests();
   }
   
+  //todo: update this to look like runtests
   // grid is a 2D array
   int **grid = NULL;
   //struct gridInfo* myGrid;
