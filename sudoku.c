@@ -10,6 +10,14 @@ int **globalGrid;
 int globalPsize;
 
 
+
+struct gridInfo {
+    int** grid;  
+    int psize;
+    bool isComplete; // Pointer to a boolean indicating completeness
+    bool isValid;    // Pointer to a boolean indicating validity     // Row number
+};
+
 //todo: create a struct that can store the &grid, bool isComplete, bool isVaild, row num
 // & pass that as a parameter in here.
 void* row(int rowNum){
@@ -21,7 +29,7 @@ void* row(int rowNum){
 
   bool isValid = true;
   int current;
-  printf("thread: %d\n", rowNum);
+  //printf("thread: %d\n", rowNum);
     for (int i = 1; i <= globalPsize && isValid; i++){
       current = globalGrid[rowNum + 1][i];
       if (current == 0){
@@ -46,27 +54,29 @@ void* row(int rowNum){
 // This method creates number of threads equivilent to number of rows.
 // The logic for testing the validity of a row is in row() which this method 
 // calls. 
-bool spawnRowThreads(bool *complete, bool *valid, int **grid){
+void spawnRowThreads(struct gridInfo* currentGrid){
   bool gridIsValid = true;
   bool* rowIsValid;
-  pthread_t rowNum[globalPsize];
+  pthread_t rowNum[currentGrid->psize];
   
   //need two for loops to run threads simultainiously 
-  for(int i = 0; i < globalPsize; i++){
+  for(int i = 0; i < currentGrid->psize; i++){
     pthread_create(&rowNum[i], NULL, row, (void*)i);
   }
 
-  for(int i = 0; i < globalPsize; i++){
+  for(int i = 0; i < currentGrid->psize; i++){
     pthread_join(rowNum[i], (void **)&rowIsValid);
     if (!*rowIsValid) { gridIsValid = false; }
   }
 
   if (gridIsValid){
     printf("valid grid\n");
-    return true;
+    currentGrid->isValid = true;
+    //return true;
   }else{
     printf("not valid grid\n");
-    return false; 
+    currentGrid->isValid = false;
+    //return false; 
   }
 }
 
@@ -77,21 +87,23 @@ bool spawnRowThreads(bool *complete, bool *valid, int **grid){
 // A puzzle is complete if it can be completed with no 0s in it
 // If complete, a puzzle is valid if all rows/columns/boxes have numbers from 1
 // to psize For incomplete puzzles, we cannot say anything about validity
-void checkPuzzle(int psize, int **grid, bool *complete, bool *valid) {
+void checkPuzzle(struct gridInfo* currentGrid) {
   // YOUR CODE GOES HERE and in HELPER FUNCTIONS
   
-  *valid = (spawnRowThreads(&complete, &valid, &grid)) ? true : false ;
-  
+  //*valid = (spawnRowThreads(&complete, &valid, &grid)) ? true : false ;
+  spawnRowThreads(&currentGrid);
 }
 
 // takes filename and pointer to grid[][]
 // returns size of Sudoku puzzle and fills grid
-int readSudokuPuzzle(char *filename, int ***grid) {
+struct gridInfo* readSudokuPuzzle(char *filename, int ***grid) {
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
     printf("Could not open file %s\n", filename);
     exit(EXIT_FAILURE);
   }
+
+  //struct gridInfo currentGrid
   int psize;
   fscanf(fp, "%d", &psize);
   printf("psize: %d\n", psize);
@@ -106,7 +118,13 @@ int readSudokuPuzzle(char *filename, int ***grid) {
   fclose(fp);
   *grid = agrid;
   globalGrid = *grid;
-  return psize;
+
+  //struct gridInfo currentGrid = malloc(gridInfo);
+  struct gridInfo currentGrid = {agrid, psize, true, true};
+  // todo: properly initialized by not going to next function with same info
+  //maybe the problem is a pointer to a local variable
+  //return psize;
+  return &currentGrid;
 }
 
 // takes puzzle size and grid[][]
@@ -141,18 +159,19 @@ int runTests(){
   for (int i = 0; i < numOfPuzzles; i++){
     //printf("size: %d\n", numOfPuzzles);
     //printf("i: %d\n", i);
-    int sudokuSize = readSudokuPuzzle(puzzleNames[i], &grid);
+    struct gridInfo* myGrid;
+    myGrid = readSudokuPuzzle(puzzleNames[i], &grid);
     bool valid = false;
     bool complete = false;
-    checkPuzzle(sudokuSize, grid, &complete, &valid);
+    checkPuzzle(myGrid);
     printf("Complete puzzle? ");
     printf(complete ? "true\n" : "false\n");
     if (complete) {
       printf("Valid puzzle? ");
       printf(valid ? "true\n" : "false\n");
     }
-    printSudokuPuzzle(sudokuSize, grid);
-    deleteSudokuPuzzle(sudokuSize, grid);
+    printSudokuPuzzle(myGrid->psize, myGrid->grid);
+    deleteSudokuPuzzle(myGrid->psize, myGrid->grid);
   }
   return EXIT_SUCCESS;
 }
@@ -167,18 +186,18 @@ int main(int argc, char **argv) {
   
   // grid is a 2D array
   int **grid = NULL;
-  // find grid size and fill grid
-  int sudokuSize = readSudokuPuzzle(argv[1], &grid);
+  struct gridInfo* myGrid;
+  myGrid = readSudokuPuzzle(argv[1], &grid);
   bool valid = false;
   bool complete = false;
-  checkPuzzle(sudokuSize, grid, &complete, &valid);
+  checkPuzzle(&myGrid);
   printf("Complete puzzle? ");
   printf(complete ? "true\n" : "false\n");
   if (complete) {
     printf("Valid puzzle? ");
     printf(valid ? "true\n" : "false\n");
   }
-  printSudokuPuzzle(sudokuSize, grid);
-  deleteSudokuPuzzle(sudokuSize, grid);
+  printSudokuPuzzle(myGrid->psize, myGrid->grid);
+  deleteSudokuPuzzle(myGrid->psize, myGrid->grid);
   return EXIT_SUCCESS;
 }
