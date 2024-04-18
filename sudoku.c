@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 
 
@@ -17,6 +16,19 @@ struct gridInfo {
     int index;
 };
 
+
+double customSqrt(double x) {
+    double guess = x / 2.0; // Initial guess
+    double epsilon = 1e-3; // Tolerance for convergence
+    
+    while (1) {
+        double newGuess = 0.5 * (guess + x / guess); // Newton-Raphson formula
+        if (fabs(newGuess - guess) < epsilon) {
+            return newGuess; // Converged to desired accuracy
+        }
+        guess = newGuess;
+    }
+}
 
 
 void* row(struct gridInfo* myGrid){
@@ -129,11 +141,12 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 
 void* quadrant(struct gridInfo* myGrid){
 
+  bool isValid = true;
   int index = myGrid->index;
-  int lengthOfQuadrant = sqrt(myGrid->psize);
+  double lengthOfQuadrant = customSqrt((double) myGrid->psize);
   int quadRowBottom;
   int increment = 1; 
-  while (increment < lengthOfQuadrant){
+  while (increment < (int) lengthOfQuadrant){
     if (index * increment <= lengthOfQuadrant){
       quadRowBottom = increment;
       break;
@@ -174,7 +187,9 @@ void* quadrant(struct gridInfo* myGrid){
   // bool* boolPtr = malloc(isValid); //initialize pointer
   // *boolPtr = (isValid) ? true : false; //define pointer
   // return boolPtr;
-  return true;
+  bool* boolPtr = malloc(isValid); //initialize pointer
+  *boolPtr = (isValid) ? true : false; //define pointer
+  return boolPtr;
 }
 
 void spawnQuadrantThreads(struct gridInfo* currentGrid){
@@ -183,22 +198,26 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
   // need to generate row lower and upper, column lower and upper from quadrant num
   //maybe just read quadrant into an array?
   bool gridIsValid = true;
-  bool* columnIsValid;
+  bool* quadrantIsValid;
   
-  int numQuadrants = sqrt(currentGrid->psize);
-  pthread_t quadrantNum[numQuadrants];
+  //double numQuadrants = customSqrt((double) currentGrid->psize);
+  int numQuadrants = currentGrid->psize;
+  //double a = 4.0;
+  //double b = sqrt(a);
+  pthread_t quadrantNum[(int) numQuadrants];
 
   //need two for loops to run threads simultainiously 
   for(int i = 0; i < numQuadrants; i++){
     currentGrid->index = i;
     pthread_create(&quadrantNum[i], NULL, quadrant, (void*)currentGrid);
-    pthread_join(quadrantNum[i], (void **)&columnIsValid);
+    pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
+    if (!*quadrantIsValid) { currentGrid->isValid = false; }
   }
 
-  for(int i = 0; i < currentGrid->psize; i++){
-    pthread_join(quadrantNum[i], (void **)&columnIsValid);
-    if (!*columnIsValid) { currentGrid->isValid = false; }
-  }
+  // for(int i = 0; i < currentGrid->psize; i++){
+  //   pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
+  //   if (!*quadrantIsValid) { currentGrid->isValid = false; }
+  // }
 
 }
 
