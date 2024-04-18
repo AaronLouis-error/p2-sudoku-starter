@@ -15,7 +15,7 @@ struct gridInfo {
     int psize;
     bool isComplete; 
     bool isValid;    
-    int rowNum;
+    int index;
 };
 
 
@@ -31,7 +31,7 @@ void* row(struct gridInfo* myGrid){
   int current;
   //printf("thread: %d\n", rowNum);
     for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
-      current = myGrid->grid[myGrid->rowNum][i];
+      current = myGrid->grid[i][myGrid->index]; //todo: validate that this checks horizontal repeats
       if (current == 0){
         //todo: method to complete row
         //todo: complete row
@@ -54,6 +54,41 @@ void* row(struct gridInfo* myGrid){
   return boolPtr;
 }
 
+void* column(struct gridInfo* myGrid){
+
+  int array[myGrid->psize]; 
+  for (int i = 0; i < myGrid->psize; i++){
+    array[i] = -1;
+  }
+
+  bool isValid = true;
+  int current;
+  
+    //for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
+    for (int i = 1; i <= myGrid->psize; i++){
+      current = myGrid->grid[myGrid->index][i];
+      if (current == 0){
+        //todo: method to complete row
+        //todo: complete row
+        // only if I can't complete the row will I return false
+        //printf("zero detected in column%d\n", i);
+        myGrid->isComplete = false;
+        isValid = false; //technically is incomplete
+      }
+      if (array[current - 1]  != -1 && current != 0){
+        // the value corresponding to current has already been set meaning 
+        // this is a repeat
+        //printf("repeat: %d in column %d\n", current, i);
+        myGrid->isValid = false;
+        isValid = false;
+      }
+      array[current - 1] = current;
+    }
+  bool* boolPtr = malloc(isValid); //initialize pointer
+  *boolPtr = (isValid) ? true : false; //define pointer
+  return boolPtr;
+}
+
 // This method creates number of threads equivilent to number of rows.
 // The logic for testing the validity of a row is in row() which this method 
 // calls. 
@@ -66,13 +101,33 @@ void spawnRowThreads(struct gridInfo* currentGrid){
   
   //need two for loops to run threads simultainiously 
   for(int i = 0; i < currentGrid->psize; i++){
-    currentGrid->rowNum = i;
+    currentGrid->index = i;
     pthread_create(&rowNum[i], NULL, row, (void*)currentGrid);
   }
 
   for(int i = 0; i < currentGrid->psize; i++){
     pthread_join(rowNum[i], (void **)&rowIsValid);
     if (!*rowIsValid) { currentGrid->isValid = false; }
+  }
+
+}
+
+void spawnColumnThreads(struct gridInfo* currentGrid){
+  //globalPsize = currentGrid->psize;
+  //todo: learn to pass an int and a struct to row() & delete global variables
+  bool gridIsValid = true;
+  bool* columnIsValid;
+  pthread_t columnNum[currentGrid->psize];
+  
+  //need two for loops to run threads simultainiously 
+  for(int i = 0; i < currentGrid->psize; i++){
+    currentGrid->index = i;
+    pthread_create(&columnNum[i], NULL, column, (void*)currentGrid);
+  }
+
+  for(int i = 0; i < currentGrid->psize; i++){
+    pthread_join(columnNum[i], (void **)&columnIsValid);
+    if (!*columnIsValid) { currentGrid->isValid = false; }
   }
 
 }
@@ -85,7 +140,8 @@ void spawnRowThreads(struct gridInfo* currentGrid){
 // If complete, a puzzle is valid if all rows/columns/boxes have numbers from 1
 // to psize For incomplete puzzles, we cannot say anything about validity
 void checkPuzzle(struct gridInfo* currentGrid) {
-  spawnRowThreads(currentGrid);
+  //spawnRowThreads(currentGrid);
+  spawnColumnThreads(currentGrid);
 }
 
 // takes filename and pointer to grid[][]
@@ -142,7 +198,7 @@ int runTests(){
   // find grid size and fill grid
   
   char* puzzleNames[] = {"puzzle2-valid.txt", "puzzle2-fill-valid.txt", "puzzle2-invalid.txt", 
-                        "puzzle9-valid.txt"};
+                        "puzzle9-valid.txt", "vertical-repeat-puzzle.txt", "edgeCase-vertical-repeat.txt"};
   int numOfPuzzles = sizeof(puzzleNames) / sizeof(puzzleNames[0]);
   for (int i = 0; i < numOfPuzzles; i++){
     readSudokuPuzzle(puzzleNames[i], myGrid);
