@@ -278,23 +278,28 @@ void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
     }
   }
 
-  for(int i = xStartCoord; i <= i + sqrt; i++){
-    for(int j = yStartCoord; j <= j + sqrt; j++){
-      int current = myGrid->grid[xStartCoord][yStartCoord];
+  printf("\tstart coordinates for %d,%d: %d,%d\n", CoordinateX, CoordinateY,
+    xStartCoord, yStartCoord);
+
+  int a = xStartCoord;// to fix strange bug where xStartCoord randomly changes
+  int b = yStartCoord;
+  for(int i = a; i < a + sqrt; i++){
+    //printf("i: %d max: %d", i, i + sqrt);
+    for(int j = b; j < b + sqrt; j++){
+      int current = myGrid->grid[i][j];
       if (current != 0){invalidArray[current - 1] = current;} //store invalid values
     }
   }
 
-  int counter = 0;
-  for(int i = 0; i < myGrid->psize; i++){
-    if(invalidArray[i] == 0){
-      array[counter] = i + 1;
-      counter++;
-    }
-  }
+  // int counter = 0;
+  // for(int i = 0; i < myGrid->psize; i++){
+  //   if(invalidArray[i] == 0){
+  //     array[counter] = i + 1;
+  //     counter++;
+  //   }
+  // }
 
-  // printf("\tstart coordinates for %d,%d: %d,%d\n", CoordinateX, CoordinateY,
-  //   xStartCoord, yStartCoord);
+  
 
   // printf("\tinvalid array: \t\t");
   // for(int i = 0; i < myGrid->psize; i++){
