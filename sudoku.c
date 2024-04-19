@@ -144,17 +144,25 @@ void* quadrant(struct gridInfo* myGrid){
   bool isValid = true;
   int index = myGrid->index;
   double lengthOfQuadrant = customSqrt((double) myGrid->psize);
-  int quadRowBottom;
-  int increment = 1; 
-  while (increment < (int) lengthOfQuadrant){
-    if (index * increment <= lengthOfQuadrant){
+  //printf("length: %d  ", (int)lengthOfQuadrant);
+  int quadRowBottom = 5;
+  int increment = 0; 
+  while (increment <= lengthOfQuadrant){
+
+    if (index * increment < myGrid->psize){
       quadRowBottom = increment;
-      break;
+      if(increment == 1 && index > 3){
+        printf("\t index: %d increment %d\n", index, increment);
+        printf("\t mul: %d, tot: %d\n", (index * increment), myGrid->psize);
+      }
+      //break;
+    } else {
+      //printf("\t index %d increment %d \n", index, increment);
     }
     increment++;
   }
-  printf("quadrowbottow: %d", quadRowBottom);
-  
+  printf("quadrowbottow: %d\n", quadRowBottom);
+  //TOdo: work on finding correct values
 
   // int array[myGrid->psize]; 
   // for (int i = 0; i < myGrid->psize; i++){
