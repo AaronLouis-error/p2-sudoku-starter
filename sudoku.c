@@ -226,7 +226,7 @@ void checkPuzzle(struct gridInfo* currentGrid) {
 
 //create two threads one incrementing and one decrementing
 void complete(struct gridInfo* currentGrid){
-  printf("pee\n");
+  //printf("pee\n");
   int arrayRow[currentGrid->psize];
   int arrayColumn[currentGrid->psize];
   int arrayBox[currentGrid->psize];
@@ -241,11 +241,11 @@ void complete(struct gridInfo* currentGrid){
         possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
         possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
         possibleBoxVals(currentGrid, coordinateX, coordinateY, arrayBox);
-          // printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
-          // for (int i = 0; i < currentGrid->psize; i++){
-          //   printf("%d, ", arrayColumn[i]); 
-          // }
-          // printf("\n");
+          printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
+          for (int i = 0; i < currentGrid->psize; i++){
+            printf("%d, ", arrayBox[i]); 
+          }
+          printf("\n");
         
         for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
           for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
@@ -278,40 +278,22 @@ void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
     }
   }
 
-  printf("\tstart coordinates for %d,%d: %d,%d\n", CoordinateX, CoordinateY,
-    xStartCoord, yStartCoord);
-
   int a = xStartCoord;// to fix strange bug where xStartCoord randomly changes
   int b = yStartCoord;
   for(int i = a; i < a + sqrt; i++){
-    //printf("i: %d max: %d", i, i + sqrt);
     for(int j = b; j < b + sqrt; j++){
       int current = myGrid->grid[i][j];
       if (current != 0){invalidArray[current - 1] = current;} //store invalid values
     }
   }
 
-  // int counter = 0;
-  // for(int i = 0; i < myGrid->psize; i++){
-  //   if(invalidArray[i] == 0){
-  //     array[counter] = i + 1;
-  //     counter++;
-  //   }
-  // }
-
-  
-
-  // printf("\tinvalid array: \t\t");
-  // for(int i = 0; i < myGrid->psize; i++){
-  //     printf("%d, ", invalidArray[i]);    
-  // }
-  // printf("\n");
-
-  // printf("\tValid options for %d,%d:  ",CoordinateX, CoordinateY);
-  // for (int i = 0; i < myGrid->psize; i++){
-  //   printf("%d, ", array[i]); 
-  // }
-  // printf("\n");
+  int counter = 0;
+  for(int i = 0; i < myGrid->psize; i++){
+    if(invalidArray[i] == 0){
+      array[counter] = i + 1;
+      counter++;
+    }
+  }
 }
 
 void possibleColumnVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
