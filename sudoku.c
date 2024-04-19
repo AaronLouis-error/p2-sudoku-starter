@@ -149,15 +149,30 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 //maybe an array of pointer to pass in a struct and coordinates
 void* quadrant(struct gridInfo* myGrid){
 
-  printf("\tcoordinates: %d,%d\n", myGrid->index, myGrid->indexTwo);
+  bool isValid = true;
+  int current;
+
+  int array[myGrid->psize]; 
+  for (int i = 0; i < myGrid->psize; i++){
+    array[i] = -1;
+  }
 
   for(int i = myGrid->index; i < myGrid->index + myGrid->sqrt; i++){
     for(int j = myGrid->indexTwo; j < myGrid->indexTwo + myGrid->sqrt; j++){
       //printf("i:%d,j:%d\n",i,j);
-      printf("%d ", myGrid->grid[i][j]);
+      //printf("%d ", myGrid->grid[i][j]);
+      current = myGrid->grid[i][j];
+      if (array[current - 1]  != -1 && current != 0){
+        // the value corresponding to current has already been set meaning 
+        // this is a repeat
+        //printf("\trepeat: %d in quadrant %d,%d\n", current, i,j);
+        myGrid->isValid = false;
+        isValid = false;
+      }
+      array[current - 1] = current;
     }
   }
-  bool isValid = true;
+  
   
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
