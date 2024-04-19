@@ -14,8 +14,15 @@ struct gridInfo {
     bool isComplete; 
     bool isValid;    
     int index;
+    int indexTwo;
+    int sqrt;
+
 };
 
+struct coordinate {
+  int x;
+  int y;
+}; 
 
 double customSqrt(double x) {
     double guess = x / 2.0; // Initial guess
@@ -128,7 +135,7 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
   
   //need two for loops to run threads simultainiously 
   for(int i = 0; i < currentGrid->psize; i++){
-    currentGrid->index = i;
+    currentGrid->index = i; //does this cause synchronization problem?
     pthread_create(&columnNum[i], NULL, column, (void*)currentGrid);
   }
 
@@ -139,8 +146,17 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 
 }
 
+//maybe an array of pointer to pass in a struct and coordinates
 void* quadrant(struct gridInfo* myGrid){
 
+  printf("\tcoordinates: %d,%d\n", myGrid->index, myGrid->indexTwo);
+
+  for(int i = myGrid->index; i < myGrid->index + myGrid->sqrt; i++){
+    for(int j = myGrid->indexTwo; j < myGrid->indexTwo + myGrid->sqrt; j++){
+      //printf("i:%d,j:%d\n",i,j);
+      printf("%d ", myGrid->grid[i][j]);
+    }
+  }
   bool isValid = true;
   
   bool* boolPtr = malloc(isValid); //initialize pointer
@@ -149,37 +165,24 @@ void* quadrant(struct gridInfo* myGrid){
 }
 
 void spawnQuadrantThreads(struct gridInfo* currentGrid){
-  //psize will be equal to the number of quadrants
-  //sqrt(psize) = size of quadrant
-  // need to generate row lower and upper, column lower and upper from quadrant num
-  //maybe just read quadrant into an array?
+  
   bool gridIsValid = true;
   bool* quadrantIsValid;
-  
-  //double numQuadrants = customSqrt((double) currentGrid->psize);
   int numQuadrants = currentGrid->psize;
   int sqrt = (int) customSqrt(currentGrid->psize);
-  //double a = 4.0;
-  //double b = sqrt(a);
+  currentGrid->sqrt = sqrt;
   pthread_t quadrantNum[(int) numQuadrants];
-
-  //need two for loops to run threads simultainiously 
-  for(int i = 0; i < numQuadrants; i++){
-    currentGrid->index = i;
-    pthread_create(&quadrantNum[i], NULL, quadrant, (void*)currentGrid);
-    pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
-    if (!*quadrantIsValid) { currentGrid->isValid = false; }
-  }
 
   for(int i = 1; i <= currentGrid->psize; i = i + sqrt){
     for(int j = 1; j <= currentGrid->psize; j = j + sqrt){
-      printf("coordinates: %d,%d\n", i, j);
+      //printf("coordinates: %d,%d\n", i, j);
+      currentGrid->index = i;
+      currentGrid->indexTwo = j;
+      pthread_create(&quadrantNum[i], NULL, quadrant, (void*)currentGrid);
+      pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
+      if (!*quadrantIsValid) { currentGrid->isValid = false; }
     }
   }
-  // for(int i = 0; i < currentGrid->psize; i++){
-  //   pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
-  //   if (!*quadrantIsValid) { currentGrid->isValid = false; }
-  // }
 
 }
 
