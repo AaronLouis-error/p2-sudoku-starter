@@ -142,59 +142,7 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 void* quadrant(struct gridInfo* myGrid){
 
   bool isValid = true;
-  int index = myGrid->index;
-  double lengthOfQuadrant = customSqrt((double) myGrid->psize);
-  //printf("length: %d  ", (int)lengthOfQuadrant);
-  int quadRowBottom = 5;
-  int increment = 0; 
-  while (increment <= lengthOfQuadrant){
-
-    if (index * increment < myGrid->psize){
-      quadRowBottom = increment;
-      if(increment == 1 && index > 3){
-        printf("\t index: %d increment %d\n", index, increment);
-        printf("\t mul: %d, tot: %d\n", (index * increment), myGrid->psize);
-      }
-      //break;
-    } else {
-      //printf("\t index %d increment %d \n", index, increment);
-    }
-    increment++;
-  }
-  printf("quadrowbottow: %d\n", quadRowBottom);
-  //TOdo: work on finding correct values
-
-  // int array[myGrid->psize]; 
-  // for (int i = 0; i < myGrid->psize; i++){
-  //   array[i] = -1;
-  // }
-
-  // bool isValid = true;
-  // int current;
   
-  //   //for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
-  //   for (int i = 1; i <= myGrid->psize; i++){
-  //     current = myGrid->grid[myGrid->index][i];
-  //     if (current == 0){
-  //       //todo: method to complete row
-  //       //todo: complete row
-  //       // only if I can't complete the row will I return false
-  //       //printf("zero detected in column%d\n", i);
-  //       myGrid->isComplete = false;
-  //       isValid = false; //technically is incomplete
-  //     }
-  //     if (array[current - 1]  != -1 && current != 0){
-  //       // the value corresponding to current has already been set meaning 
-  //       // this is a repeat
-  //       //printf("repeat: %d in column %d\n", current, i);
-  //       myGrid->isValid = false;
-  //       isValid = false;
-  //     }
-  //     array[current - 1] = current;
-  //   }
-  // bool* boolPtr = malloc(isValid); //initialize pointer
-  // *boolPtr = (isValid) ? true : false; //define pointer
-  // return boolPtr;
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
@@ -210,6 +158,7 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
   
   //double numQuadrants = customSqrt((double) currentGrid->psize);
   int numQuadrants = currentGrid->psize;
+  int sqrt = (int) customSqrt(currentGrid->psize);
   //double a = 4.0;
   //double b = sqrt(a);
   pthread_t quadrantNum[(int) numQuadrants];
@@ -222,6 +171,11 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
     if (!*quadrantIsValid) { currentGrid->isValid = false; }
   }
 
+  for(int i = 1; i <= currentGrid->psize; i = i + sqrt){
+    for(int j = 1; j <= currentGrid->psize; j = j + sqrt){
+      printf("coordinates: %d,%d\n", i, j);
+    }
+  }
   // for(int i = 0; i < currentGrid->psize; i++){
   //   pthread_join(quadrantNum[i], (void **)&quadrantIsValid);
   //   if (!*quadrantIsValid) { currentGrid->isValid = false; }
