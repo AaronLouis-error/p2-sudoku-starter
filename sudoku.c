@@ -239,7 +239,7 @@ void complete(struct gridInfo* currentGrid){
         //run array creation here
         possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
         possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
-        
+
           // printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
           // for (int i = 0; i < currentGrid->psize; i++){
           //   printf("%d, ", arrayColumn[i]); 
@@ -249,7 +249,7 @@ void complete(struct gridInfo* currentGrid){
         for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
           for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
             for (int k = 0; k < currentGrid->psize && arrayBox[k] != 0; k++){
-              if (arrayRow[i] == arrayColumn[j] && arrayColumn[j] == arrayBox[k]){
+              if (arrayRow[i] == arrayColumn[j]){
                 currentGrid->grid[coordinateX][coordinateY] = arrayRow[i];
               }
             }
