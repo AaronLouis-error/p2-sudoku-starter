@@ -238,6 +238,13 @@ void complete(struct gridInfo* currentGrid){
         int coordinateY = b;
         //run array creation here
         possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
+
+          //printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
+          // for (int i = 0; i < currentGrid->psize; i++){
+          //   printf("%d, ", arrayRow[i]); 
+          // }
+          // printf("\n");
+        
         for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
           for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
             for (int k = 0; k < currentGrid->psize && arrayBox[k] != 0; k++){
@@ -256,11 +263,6 @@ void possibleRowVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
   int invalidArray[myGrid->psize];
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = 0;
-    //invalidArray[i] = 0;
-  }
-
-  for (int i = 0; i < myGrid->psize; i++){
-    //array[i] = 0;
     invalidArray[i] = 0;
   }
 
@@ -269,13 +271,6 @@ void possibleRowVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
     if (current != 0){invalidArray[current - 1] = current;} //store invalid values
   }
 
-  printf("\tinvalid array: \t\t");
-  for(int i = 0; i < myGrid->psize; i++){
-      printf("%d, ", invalidArray[i]);
-  }
-  printf("\n");
-
-
   int counter = 0;
   for(int i = 0; i < myGrid->psize; i++){
     if(invalidArray[i] == 0){
@@ -283,6 +278,12 @@ void possibleRowVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
       counter++;
     }
   }
+
+  // printf("\tinvalid array: \t\t");
+  // for(int i = 0; i < myGrid->psize; i++){
+  //     printf("%d, ", invalidArray[i]);    
+  // }
+  // printf("\n");
 
   // printf("\tValid options for %d,%d:  ",CoordinateX, CoordinateY);
   // for (int i = 0; i < myGrid->psize; i++){
