@@ -188,6 +188,8 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
   currentGrid->sqrt = sqrt;
   pthread_t quadrantNum[(int) numQuadrants];
 
+
+  //todo: make second for loop so this isn't serial
   for(int i = 1; i <= currentGrid->psize; i = i + sqrt){
     for(int j = 1; j <= currentGrid->psize; j = j + sqrt){
       //printf("coordinates: %d,%d\n", i, j);
@@ -209,8 +211,8 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
 // If complete, a puzzle is valid if all rows/columns/boxes have numbers from 1
 // to psize For incomplete puzzles, we cannot say anything about validity
 void checkPuzzle(struct gridInfo* currentGrid) {
-  //spawnRowThreads(currentGrid);
-  //spawnColumnThreads(currentGrid);
+  spawnRowThreads(currentGrid);
+  spawnColumnThreads(currentGrid);
   spawnQuadrantThreads(currentGrid);
 }
 
