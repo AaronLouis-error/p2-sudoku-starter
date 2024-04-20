@@ -1,4 +1,5 @@
 // Sudoku puzzle verifier and solver
+//Aaron Gropper
 
 #include <assert.h>
 #include <pthread.h>
@@ -6,8 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-
+//holds key information about the sudoku puzzle
 struct gridInfo {
     int** grid;
     int psize;
@@ -20,12 +20,7 @@ struct gridInfo {
 
 };
 
-struct coordinate {
-  int x;
-  int y;
-}; 
-
-
+//returns square root
 double customSqrt(double x) {
     double guess = x / 2.0; // Initial guess
     double epsilon = 1e-3; // Tolerance for convergence
@@ -39,24 +34,18 @@ double customSqrt(double x) {
     }
 }
 
-
+//validates the row
 void* row(struct gridInfo* myGrid){
 
   int array[myGrid->psize]; 
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
-  //myGrid->isValid = true;
   bool isValid = true;
   int current;
-  //printf("thread: %d\n", rowNum);
     for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
       current = myGrid->grid[i][myGrid->index]; //todo: validate that this checks horizontal repeats
       if (current == 0){
-        //todo: method to complete row
-        //todo: complete row
-        // only if I can't complete the row will I return false
-        //printf("zero detected\n");
         myGrid->isComplete = false;
         isValid = false; //technically is incomplete
       }
@@ -73,37 +62,29 @@ void* row(struct gridInfo* myGrid){
   return boolPtr;
 }
 
+//validates the column
 void* column(struct gridInfo* myGrid){
-
   int array[myGrid->psize]; 
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
 
-
   bool isValid = true;
   int current;
-  
-    //for (int i = 1; i <= myGrid->psize && myGrid->isValid; i++){
-    for (int i = 1; i <= myGrid->psize; i++){
-      current = myGrid->grid[myGrid->index][i];
-      if (current == 0){
-        //todo: method to complete row
-        //todo: complete row
-        // only if I can't complete the row will I return false
-        //printf("zero detected in column%d\n", i);
-        myGrid->isComplete = false;
-        isValid = false; //technically is incomplete
-      }
-      if (array[current - 1]  != -1 && current != 0){
-        // the value corresponding to current has already been set meaning 
-        // this is a repeat
-        //printf("repeat: %d in column %d\n", current, i);
-        myGrid->isValid = false;
-        isValid = false;
-      }
-      array[current - 1] = current;
+  for (int i = 1; i <= myGrid->psize; i++){
+    current = myGrid->grid[myGrid->index][i];
+    if (current == 0){
+      myGrid->isComplete = false;
+      isValid = false; //technically is incomplete
     }
+    if (array[current - 1]  != -1 && current != 0){
+      // the value corresponding to current has already been set meaning 
+        // this is a repeat
+      myGrid->isValid = false;
+      isValid = false;
+    }
+    array[current - 1] = current;
+  }
   bool* boolPtr = malloc(isValid); //initialize pointer
   *boolPtr = (isValid) ? true : false; //define pointer
   return boolPtr;
@@ -131,6 +112,7 @@ void spawnRowThreads(struct gridInfo* currentGrid){
 
 }
 
+// This method creates number of threads equivilent to numberof columns
 void spawnColumnThreads(struct gridInfo* currentGrid){
   bool gridIsValid = true;
   bool* columnIsValid;
@@ -149,7 +131,7 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 
 }
 
-//maybe an array of pointer to pass in a struct and coordinates
+//validates a box in the puzzle
 void* quadrant(struct gridInfo* myGrid){
 
   bool isValid = true;
@@ -182,6 +164,7 @@ void* quadrant(struct gridInfo* myGrid){
   return boolPtr;
 }
 
+// This method creates number of threads equivilent to number boxes
 void spawnQuadrantThreads(struct gridInfo* currentGrid){
   
   bool gridIsValid = true;
@@ -229,7 +212,7 @@ void checkPuzzle(struct gridInfo* currentGrid) {
   }
 }
 
-
+//returns true if the puzzle has no zeros
 bool isComplete(struct gridInfo* myGrid){
   for(int i = 1; i <= myGrid->psize; i++){
     for(int j = 1; j <= myGrid->psize; j++){
@@ -241,8 +224,7 @@ bool isComplete(struct gridInfo* myGrid){
   return true;
 }
 
-
-//create two threads one incrementing and one decrementing
+//attempts to complete the puzzle
 void complete(struct gridInfo* currentGrid){
   int arrayRow[currentGrid->psize];
   int arrayColumn[currentGrid->psize];
@@ -277,7 +259,7 @@ void complete(struct gridInfo* currentGrid){
     }
 }
 
-
+//generates possible values to fill a specific box
 void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
   int invalidArray[myGrid->psize];
   for (int i = 0; i < myGrid->psize; i++){
@@ -313,6 +295,7 @@ void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
   }
 }
 
+//generates possible values to fill a specific Column
 void possibleColumnVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
   int invalidArray[myGrid->psize];
   for (int i = 0; i < myGrid->psize; i++){
@@ -346,6 +329,7 @@ void possibleColumnVals(struct gridInfo* myGrid, int CoordinateX, int Coordinate
   // printf("\n");
 }
 
+//generates possible values to fill a specific Row
 void possibleRowVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
   int invalidArray[myGrid->psize];
   for (int i = 0; i < myGrid->psize; i++){
@@ -378,8 +362,6 @@ void possibleRowVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
   // }
   // printf("\n");
 }
-
-
 
 // takes filename and pointer to grid[][]
 // returns size of Sudoku puzzle and fills grid
@@ -429,6 +411,7 @@ void deleteSudokuPuzzle(int psize, int **grid) {
   //todo: free the struct
 }
 
+//runs tests using puzzles
 int runTests(){
   int **grid = NULL;
   struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
@@ -457,7 +440,6 @@ int runTests(){
 // expects file name of the puzzle as argument in command line
 int main(int argc, char **argv) {
   if (argc != 2) {
-    //printf("usage: ./sudoku puzzle.txt\n");
     printf("Running Tests\n");
     return runTests();
   }
