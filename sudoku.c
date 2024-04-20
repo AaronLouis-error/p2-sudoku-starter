@@ -90,6 +90,39 @@ void* column(struct gridInfo* myGrid){
   return boolPtr;
 }
 
+//validates a box in the puzzle
+void* quadrant(struct gridInfo* myGrid){
+
+  bool isValid = true;
+  int current;
+
+  int array[myGrid->psize]; 
+  for (int i = 0; i < myGrid->psize; i++){
+    array[i] = -1;
+  }
+
+  for(int i = myGrid->index; i < myGrid->index + myGrid->sqrt; i++){
+    for(int j = myGrid->indexTwo; j < myGrid->indexTwo + myGrid->sqrt; j++){
+      //printf("i:%d,j:%d\n",i,j);
+      //printf("%d ", myGrid->grid[i][j]);
+      current = myGrid->grid[i][j];
+      if (array[current - 1]  != -1 && current != 0){
+        // the value corresponding to current has already been set meaning 
+        // this is a repeat
+        //printf("\trepeat: %d in quadrant %d,%d\n", current, i,j);
+        myGrid->isValid = false;
+        isValid = false;
+      }
+      array[current - 1] = current;
+    }
+  }
+  
+  
+  bool* boolPtr = malloc(isValid); //initialize pointer
+  *boolPtr = (isValid) ? true : false; //define pointer
+  return boolPtr;
+}
+
 // This method creates number of threads equivilent to number of rows.
 // The logic for testing the validity of a row is in row() which this method 
 // calls. 
@@ -131,39 +164,6 @@ void spawnColumnThreads(struct gridInfo* currentGrid){
 
 }
 
-//validates a box in the puzzle
-void* quadrant(struct gridInfo* myGrid){
-
-  bool isValid = true;
-  int current;
-
-  int array[myGrid->psize]; 
-  for (int i = 0; i < myGrid->psize; i++){
-    array[i] = -1;
-  }
-
-  for(int i = myGrid->index; i < myGrid->index + myGrid->sqrt; i++){
-    for(int j = myGrid->indexTwo; j < myGrid->indexTwo + myGrid->sqrt; j++){
-      //printf("i:%d,j:%d\n",i,j);
-      //printf("%d ", myGrid->grid[i][j]);
-      current = myGrid->grid[i][j];
-      if (array[current - 1]  != -1 && current != 0){
-        // the value corresponding to current has already been set meaning 
-        // this is a repeat
-        //printf("\trepeat: %d in quadrant %d,%d\n", current, i,j);
-        myGrid->isValid = false;
-        isValid = false;
-      }
-      array[current - 1] = current;
-    }
-  }
-  
-  
-  bool* boolPtr = malloc(isValid); //initialize pointer
-  *boolPtr = (isValid) ? true : false; //define pointer
-  return boolPtr;
-}
-
 // This method creates number of threads equivilent to number boxes
 void spawnQuadrantThreads(struct gridInfo* currentGrid){
   
@@ -191,7 +191,6 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
         currentGrid->isValid = false; }
   }
 }
-
 
 // takes puzzle size and grid[][] representing sudoku puzzle
 // and tow booleans to be assigned: complete and valid.
