@@ -46,7 +46,7 @@ void* row(struct gridInfo* myGrid){
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
-
+  //myGrid->isValid = true;
   bool isValid = true;
   int current;
   //printf("thread: %d\n", rowNum);
@@ -63,7 +63,6 @@ void* row(struct gridInfo* myGrid){
       if (array[current - 1]  != -1 && current != 0){
         // the value corresponding to current has already been set meaning 
         // this is a repeat
-        //printf("repeat: %d\n", current);
         myGrid->isValid = false;
         isValid = false;
       }
@@ -80,6 +79,7 @@ void* column(struct gridInfo* myGrid){
   for (int i = 0; i < myGrid->psize; i++){
     array[i] = -1;
   }
+
 
   bool isValid = true;
   int current;
@@ -125,7 +125,8 @@ void spawnRowThreads(struct gridInfo* currentGrid){
 
   for(int i = 0; i < currentGrid->psize; i++){
     pthread_join(rowNum[i], (void **)&rowIsValid);
-    if (!*rowIsValid) { currentGrid->isValid = false; }
+    if (!*rowIsValid) { 
+      currentGrid->isValid = false; }
   }
 
 }
@@ -203,7 +204,9 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
 
   for (int i = 0; i < currentGrid->psize; i++){
     pthread_join(quadrantNum[i ], (void **)&quadrantIsValid);
-      if (!*quadrantIsValid) { currentGrid->isValid = false; }
+      if (!*quadrantIsValid) { 
+        //printf("invalid quad"); 
+        currentGrid->isValid = false; }
   }
 
 }
@@ -220,49 +223,14 @@ void checkPuzzle(struct gridInfo* currentGrid) {
   spawnRowThreads(currentGrid);
   spawnColumnThreads(currentGrid);
   spawnQuadrantThreads(currentGrid);
+  //pthread_t threadNum = {1, 2};
   if (!currentGrid->isComplete){
+    //pthread_create(1, NULL, complete, (void*)currentGrid);
+    //pthread_creat
     complete(currentGrid);
   }
 }
 
-int*** copyGrid(struct gridInfo* currentGrid){
-
-  int **agrid = (int **)malloc((currentGrid->psize + 1) * sizeof(int *));
-  for (int row = 1; row <= currentGrid->psize; row++) {
-    agrid[row] = (int *)malloc((currentGrid->psize + 1) * sizeof(int));
-    for (int col = 1; col <= currentGrid->psize; col++) {
-      //fscanf(fp, "%d", &agrid[row][col]);
-    }
-  }
-
-  for(int i = 0; i < currentGrid->psize; i++){
-    for(int j = 0; j < currentGrid->psize; j++){
-      agrid[i][j] = currentGrid->grid[i+1][j+1];
-    }
-  }
-  int *** point;
-  *point = agrid;
-  return point;
-}
-
-int** copyGridHelper(int ** grid, int psize){
-
-  int **agrid = (int **)malloc((psize + 1) * sizeof(int *));
-  for (int row = 1; row <= psize; row++) {
-    agrid[row] = (int *)malloc((psize + 1) * sizeof(int));
-    for (int col = 1; col <= psize; col++) {
-      //fscanf(fp, "%d", &agrid[row][col]);
-    }
-  }
-
-  for(int i = 0; i < psize; i++){
-    for(int j = 0; j < psize; j++){
-      agrid[i][j] = grid[i+1][j+1];
-    }
-  }
- 
-  return agrid;
-}
 
 bool isComplete(struct gridInfo* myGrid){
   for(int i = 1; i <= myGrid->psize; i++){
@@ -278,34 +246,25 @@ bool isComplete(struct gridInfo* myGrid){
 
 //create two threads one incrementing and one decrementing
 void complete(struct gridInfo* currentGrid){
-  //printf("pee\n");
   int arrayRow[currentGrid->psize];
   int arrayColumn[currentGrid->psize];
   int arrayBox[currentGrid->psize];
-  int ** oldGrid = *copyGridHelper(currentGrid->grid, currentGrid->psize);
-
-  for(int z = 0; z < currentGrid->psize; z++){
+  
     for(int a = 1; a <= currentGrid->psize; a++){
       for(int b = 1; b <= currentGrid->psize; b++){
         if (currentGrid->grid[a][b] == 0){
-          //printf("zero at %d,%d\n", a, b);
           int coordinateX = a;
           int coordinateY = b;
-          //run array creation here
           possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
           possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
           possibleBoxVals(currentGrid, coordinateX, coordinateY, arrayBox);
-            // printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
-            // for (int i = 0; i < currentGrid->psize; i++){
-            //   printf("%d, ", arrayBox[i]); 
-            // }
-            // printf("\n");
-          
           for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
             for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
               for (int k = 0; k < currentGrid->psize && arrayBox[k] != 0; k++){
                 if (arrayRow[i] == arrayColumn[j] && arrayColumn[j] == arrayBox[k]){
-                  currentGrid->grid[coordinateX][coordinateY] = arrayRow[i];
+                  if (arrayRow[i] != 0){
+                    currentGrid->grid[coordinateX][coordinateY] = arrayRow[i];
+                  }
                 }
               }
             }
@@ -314,16 +273,10 @@ void complete(struct gridInfo* currentGrid){
       }
     }
     if(isComplete(currentGrid)){
-      break;
-    } else {
-      //currentGrid->grid = copyGridHelper(oldGrid, currentGrid->psize);
-      readSudokuPuzzle(currentGrid->fileName, currentGrid);
-      currentGrid->isComplete = false;
-    }
-  }
-  if(isComplete(currentGrid)){
       currentGrid->isComplete = true;
-  }
+      currentGrid->isValid = true;
+      checkPuzzle(currentGrid);
+    }
 }
 
 
@@ -484,15 +437,16 @@ int runTests(){
   //myGrid->psize = malloc(sizeof(int));
   // find grid size and fill grid
   
-  char* puzzleNames[] = {"puzzle2-valid.txt", "puzzle2-fill-valid.txt", 
-                        "puzzle2-invalid.txt", "puzzle9-valid.txt",
-                        "vertical-repeat-puzzle.txt", 
-                        "edgeCase-vertical-repeat.txt",
-                        "puzzle9-invalid-diagRepeat.txt"};
+  char* puzzleNames[] = {"easy-complete.txt", "edgeCase-vertical-repeat.txt", 
+                        "puzzle2-fill-valid.txt", "puzzle2-invalid.txt",
+                        "puzzle2-valid.txt", "puzzle4-fill-hard.txt",
+                        "puzzle9-invalid-diagRepeat.txt", 
+                        "puzzle9-valid.txt"};
   int numOfPuzzles = sizeof(puzzleNames) / sizeof(puzzleNames[0]);
   for (int i = 0; i < numOfPuzzles; i++){
     readSudokuPuzzle(puzzleNames[i], myGrid);
     checkPuzzle(myGrid);
+    printf("\t%s\n", myGrid->fileName);
     printf("Complete puzzle? ");
     printf(myGrid->isComplete ? "true\n" : "false\n");
     if (myGrid->isComplete) {
