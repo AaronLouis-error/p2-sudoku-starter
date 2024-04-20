@@ -16,6 +16,7 @@ struct gridInfo {
     int index;
     int indexTwo;
     int sqrt;
+    char* fileName;
 
 };
 
@@ -224,42 +225,107 @@ void checkPuzzle(struct gridInfo* currentGrid) {
   }
 }
 
+int*** copyGrid(struct gridInfo* currentGrid){
+
+  int **agrid = (int **)malloc((currentGrid->psize + 1) * sizeof(int *));
+  for (int row = 1; row <= currentGrid->psize; row++) {
+    agrid[row] = (int *)malloc((currentGrid->psize + 1) * sizeof(int));
+    for (int col = 1; col <= currentGrid->psize; col++) {
+      //fscanf(fp, "%d", &agrid[row][col]);
+    }
+  }
+
+  for(int i = 0; i < currentGrid->psize; i++){
+    for(int j = 0; j < currentGrid->psize; j++){
+      agrid[i][j] = currentGrid->grid[i+1][j+1];
+    }
+  }
+  int *** point;
+  *point = agrid;
+  return point;
+}
+
+int** copyGridHelper(int ** grid, int psize){
+
+  int **agrid = (int **)malloc((psize + 1) * sizeof(int *));
+  for (int row = 1; row <= psize; row++) {
+    agrid[row] = (int *)malloc((psize + 1) * sizeof(int));
+    for (int col = 1; col <= psize; col++) {
+      //fscanf(fp, "%d", &agrid[row][col]);
+    }
+  }
+
+  for(int i = 0; i < psize; i++){
+    for(int j = 0; j < psize; j++){
+      agrid[i][j] = grid[i+1][j+1];
+    }
+  }
+ 
+  return agrid;
+}
+
+bool isComplete(struct gridInfo* myGrid){
+  for(int i = 1; i <= myGrid->psize; i++){
+    for(int j = 1; j <= myGrid->psize; j++){
+      if (myGrid->grid[i][j] == 0){
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
 //create two threads one incrementing and one decrementing
 void complete(struct gridInfo* currentGrid){
   //printf("pee\n");
   int arrayRow[currentGrid->psize];
   int arrayColumn[currentGrid->psize];
   int arrayBox[currentGrid->psize];
+  int ** oldGrid = *copyGridHelper(currentGrid->grid, currentGrid->psize);
 
-  for(int a = 1; a <= currentGrid->psize; a++){
-    for(int b = 1; b <= currentGrid->psize; b++){
-      if (currentGrid->grid[a][b] == 0){
-        printf("zero at %d,%d\n", a, b);
-        int coordinateX = a;
-        int coordinateY = b;
-        //run array creation here
-        possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
-        possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
-        possibleBoxVals(currentGrid, coordinateX, coordinateY, arrayBox);
-          printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
-          for (int i = 0; i < currentGrid->psize; i++){
-            printf("%d, ", arrayBox[i]); 
-          }
-          printf("\n");
-        
-        for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
-          for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
-            for (int k = 0; k < currentGrid->psize && arrayBox[k] != 0; k++){
-              if (arrayRow[i] == arrayColumn[j] && arrayColumn[j] == arrayBox[k]){
-                currentGrid->grid[coordinateX][coordinateY] = arrayRow[i];
+  for(int z = 0; z < currentGrid->psize; z++){
+    for(int a = 1; a <= currentGrid->psize; a++){
+      for(int b = 1; b <= currentGrid->psize; b++){
+        if (currentGrid->grid[a][b] == 0){
+          //printf("zero at %d,%d\n", a, b);
+          int coordinateX = a;
+          int coordinateY = b;
+          //run array creation here
+          possibleRowVals(currentGrid, coordinateX, coordinateY, arrayRow);
+          possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
+          possibleBoxVals(currentGrid, coordinateX, coordinateY, arrayBox);
+            // printf("\tValid options for %d,%d:  ",coordinateX, coordinateY);
+            // for (int i = 0; i < currentGrid->psize; i++){
+            //   printf("%d, ", arrayBox[i]); 
+            // }
+            // printf("\n");
+          
+          for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
+            for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
+              for (int k = 0; k < currentGrid->psize && arrayBox[k] != 0; k++){
+                if (arrayRow[i] == arrayColumn[j] && arrayColumn[j] == arrayBox[k]){
+                  currentGrid->grid[coordinateX][coordinateY] = arrayRow[i];
+                }
               }
             }
           }
         }
       }
     }
+    if(isComplete(currentGrid)){
+      break;
+    } else {
+      //currentGrid->grid = copyGridHelper(oldGrid, currentGrid->psize);
+      readSudokuPuzzle(currentGrid->fileName, currentGrid);
+      currentGrid->isComplete = false;
+    }
+  }
+  if(isComplete(currentGrid)){
+      currentGrid->isComplete = true;
   }
 }
+
 
 void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
   int invalidArray[myGrid->psize];
@@ -372,6 +438,7 @@ void readSudokuPuzzle(char *filename, struct gridInfo* myGrid) {
     printf("Could not open file %s\n", filename);
     exit(EXIT_FAILURE);
   }
+  myGrid->fileName = filename;
 
   fscanf(fp, "%d", &myGrid->psize);
   int **agrid = (int **)malloc((myGrid->psize + 1) * sizeof(int *));
