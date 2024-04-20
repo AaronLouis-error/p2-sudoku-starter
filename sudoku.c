@@ -205,10 +205,8 @@ void spawnQuadrantThreads(struct gridInfo* currentGrid){
   for (int i = 0; i < currentGrid->psize; i++){
     pthread_join(quadrantNum[i ], (void **)&quadrantIsValid);
       if (!*quadrantIsValid) { 
-        //printf("invalid quad"); 
         currentGrid->isValid = false; }
   }
-
 }
 
 
@@ -434,9 +432,6 @@ void deleteSudokuPuzzle(int psize, int **grid) {
 int runTests(){
   int **grid = NULL;
   struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
-  //myGrid->psize = malloc(sizeof(int));
-  // find grid size and fill grid
-  
   char* puzzleNames[] = {"easy-complete.txt", "edgeCase-vertical-repeat.txt", 
                         "puzzle2-fill-valid.txt", "puzzle2-invalid.txt",
                         "puzzle2-valid.txt", "puzzle4-fill-hard.txt",
@@ -467,20 +462,16 @@ int main(int argc, char **argv) {
     return runTests();
   }
   
-  //todo: update this to look like runtests
-  // grid is a 2D array
   int **grid = NULL;
-  //struct gridInfo* myGrid;
   struct gridInfo* myGrid = malloc(sizeof(struct gridInfo));
-  readSudokuPuzzle(argv[1], &myGrid);
-  bool valid = false;
-  bool complete = false;
-  checkPuzzle(&myGrid);
+  readSudokuPuzzle(argv[1], myGrid);
+  checkPuzzle(myGrid);
+  printf("\t%s\n", myGrid->fileName);
   printf("Complete puzzle? ");
-  printf(complete ? "true\n" : "false\n");
-  if (complete) {
+  printf(myGrid->isComplete ? "true\n" : "false\n");
+  if (myGrid->isComplete) {
     printf("Valid puzzle? ");
-    printf(valid ? "true\n" : "false\n");
+    printf(myGrid->isValid ? "true\n" : "false\n");
   }
   printSudokuPuzzle(myGrid->psize, myGrid->grid);
   deleteSudokuPuzzle(myGrid->psize, myGrid->grid);
