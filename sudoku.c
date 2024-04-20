@@ -1,4 +1,5 @@
 // Sudoku puzzle verifier and solver
+//compile with "gcc -pthread sudoku.c -o sudoku"
 //Aaron Gropper
 
 #include <assert.h>
