@@ -24,7 +24,6 @@ struct completionInfo{
   struct gridInfo* myGrid;
   int CoordinateX;
   int CoordinateY;
-  int *array;
 };
 
 //returns square root
@@ -256,31 +255,45 @@ void * possibleRowVals(struct completionInfo * info){
     }
   }
 
-  // printf("\tinvalid array: \t\t");
-  // for(int i = 0; i < myGrid->psize; i++){
-  //     printf("%d, ", invalidArray[i]);    
-  // }
-  // printf("\n");
+  return (void *)array;
+}
 
-  printf("\tValid options for %d,%d:  ",info->CoordinateX, info->CoordinateY);
+//generates possible values to fill a specific Row
+void * possibleColumnVals(struct completionInfo * info){
+
+  int *array = (int *)malloc(sizeof(int) * info->myGrid->psize);
+  int a = info->myGrid->psize;
+  int invalidArray[info->myGrid->psize];
   for (int i = 0; i < info->myGrid->psize; i++){
-    printf("%d, ", array[i]); 
+    array[i] = 0;
+    invalidArray[i] = 0;
   }
-  printf("\n");
-  //info->array = array;
-  //return &array;
+
+  for(int i = 0; i < info->myGrid->psize; i++){
+    int current = info->myGrid->grid[i + 1][info->CoordinateY];
+    if (current != 0){invalidArray[current - 1] = current;} //store invalid values
+  }
+
+  int counter = 0;
+  for(int i = 0; i < info->myGrid->psize; i++){
+    if(invalidArray[i] == 0){
+      array[counter] = i + 1;
+      counter++;
+    }
+  }
+
   return (void *)array;
 }
 
 //attempts to complete the puzzle
 void complete(struct gridInfo* currentGrid){
-  int arrayRow[currentGrid->psize];
-  int arrayColumn[currentGrid->psize];
+  int *arrayRow; 
+  int *arrayColumn;
   int arrayBox[currentGrid->psize];
-  int * pointy;
-  struct completionInfo* forRow = malloc(sizeof(struct completionInfo));
-  struct completionInfo* forCol = malloc(sizeof(struct completionInfo));
-  struct completionInfo* forBox = malloc(sizeof(struct completionInfo));
+  //int * pointy;
+  struct completionInfo* info = malloc(sizeof(struct completionInfo));
+  //struct completionInfo* forCol = malloc(sizeof(struct completionInfo));
+  //struct completionInfo* forBox = malloc(sizeof(struct completionInfo));
   int numThreads = 3;
   pthread_t threadNum[(int) numThreads];
   
@@ -289,31 +302,23 @@ void complete(struct gridInfo* currentGrid){
         if (currentGrid->grid[a][b] == 0){
           int coordinateX = a;
           int coordinateY = b;
-          forRow->CoordinateX = coordinateX;
-          forCol->CoordinateX = coordinateX;
-          forBox->CoordinateX = coordinateX;
 
-          forRow->CoordinateY = coordinateY;
-          forCol->CoordinateY= coordinateY;
-          forBox->CoordinateY = coordinateY;
+          info->CoordinateX = coordinateX;
+          info->CoordinateY = coordinateY;
+          info->myGrid = currentGrid;
+         
 
-          forRow->array = arrayRow;
-          forCol->array = arrayColumn;
-          forBox->array = arrayBox;
-
-          forRow->myGrid = currentGrid;
-          forCol->myGrid = currentGrid;
-          forBox->myGrid = currentGrid;
-
-          pthread_create(&threadNum[1], NULL, possibleRowVals, forRow);
-          pthread_join(threadNum[1], (void *) &pointy);
+          pthread_create(&threadNum[0], NULL, possibleRowVals, info);
+          pthread_join(threadNum[0], (void *) &arrayRow);
+          pthread_create(&threadNum[1], NULL, possibleColumnVals, info);
+          pthread_join(threadNum[1], (void *) &arrayColumn);
           printf("\tarray: ");
           for (int f = 0; f < currentGrid->psize; f++){
-            printf("%d, ", pointy[f]);
+            printf("%d, ", arrayColumn[f]);
           }
           printf("\n");
 
-          possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
+          //possibleColumnVals(currentGrid, coordinateX, coordinateY, arrayColumn);
           possibleBoxVals(currentGrid, coordinateX, coordinateY, arrayBox);
           for(int i = 0; i < currentGrid->psize && arrayRow[i] != 0; i++){
             for(int j = 0; j < currentGrid->psize && arrayColumn[j] != 0; j++){
@@ -373,38 +378,38 @@ void possibleBoxVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, 
 }
 
 //generates possible values to fill a specific Column
-void possibleColumnVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
-  int invalidArray[myGrid->psize];
-  for (int i = 0; i < myGrid->psize; i++){
-    array[i] = 0;
-    invalidArray[i] = 0;
-  }
+// void possibleColumnVals(struct gridInfo* myGrid, int CoordinateX, int CoordinateY, int *array){
+//   int invalidArray[myGrid->psize];
+//   for (int i = 0; i < myGrid->psize; i++){
+//     array[i] = 0;
+//     invalidArray[i] = 0;
+//   }
 
-  for(int i = 0; i < myGrid->psize; i++){
-    int current = myGrid->grid[i + 1][CoordinateY];
-    if (current != 0){invalidArray[current - 1] = current;} //store invalid values
-  }
+//   for(int i = 0; i < myGrid->psize; i++){
+//     int current = myGrid->grid[i + 1][CoordinateY];
+//     if (current != 0){invalidArray[current - 1] = current;} //store invalid values
+//   }
 
-  int counter = 0;
-  for(int i = 0; i < myGrid->psize; i++){
-    if(invalidArray[i] == 0){
-      array[counter] = i + 1;
-      counter++;
-    }
-  }
+//   int counter = 0;
+//   for(int i = 0; i < myGrid->psize; i++){
+//     if(invalidArray[i] == 0){
+//       array[counter] = i + 1;
+//       counter++;
+//     }
+//   }
 
-  // printf("\tinvalid array: \t\t");
-  // for(int i = 0; i < myGrid->psize; i++){
-  //     printf("%d, ", invalidArray[i]);    
-  // }
-  // printf("\n");
+//   // printf("\tinvalid array: \t\t");
+//   // for(int i = 0; i < myGrid->psize; i++){
+//   //     printf("%d, ", invalidArray[i]);    
+//   // }
+//   // printf("\n");
 
-  // printf("\tValid options for %d,%d:  ",CoordinateX, CoordinateY);
-  // for (int i = 0; i < myGrid->psize; i++){
-  //   printf("%d, ", array[i]); 
-  // }
-  // printf("\n");
-}
+//   // printf("\tValid options for %d,%d:  ",CoordinateX, CoordinateY);
+//   // for (int i = 0; i < myGrid->psize; i++){
+//   //   printf("%d, ", array[i]); 
+//   // }
+//   // printf("\n");
+// }
 
 
 // takes filename and pointer to grid[][]
